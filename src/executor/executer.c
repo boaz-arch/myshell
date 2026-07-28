@@ -34,6 +34,8 @@ int execute_command(Command *cmd)
         perror("waitpid");
         return -1;
     }
+    
+    WIFEXITED(status);
 
     return WEXITSTATUS(status);
 }
