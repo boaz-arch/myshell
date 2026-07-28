@@ -1,4 +1,8 @@
-#include <parser.c>
+#include <parser.h>
+
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 Command *parse_command(const char *input){
     Command *cmd = malloc(sizeof(Command));

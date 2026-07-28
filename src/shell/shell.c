@@ -1,6 +1,6 @@
-#include <shell.h>
-#include <parser.h>
-#include <executor.h>
+#include "shell.h"
+#include "parser.h"
+#include "executor.h"
 
 #include<stdio.h>
 #include <stdlib.h>
@@ -23,6 +23,7 @@ int read_input(char *input, size_t size) {
 
 void shell_loop(void) {
     char input[MAX_INPUT_SIZE];
+    COmmand *cmd;
 
     while (1) {
         print_prompt();
@@ -35,9 +36,9 @@ void shell_loop(void) {
         if (input[0] == '\0')
             continue;
 
-        parse_input(input);
-        execute_command();
-        free_mem();
+        cmd = parse_input(input);
+        execute_command(cmd);
+        free_command(cmd);
     }
 }
 
