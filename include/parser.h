@@ -6,9 +6,13 @@ typedef struct {
     char **argv;
     
     char *input_file;
-    char *output_file;
     
-    int append_mode;
+    char *output_file;
+    int output_append;
+        
+    char * error_file;
+    int error_append;
+
 } Command;
 
 

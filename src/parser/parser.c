@@ -1,43 +1,47 @@
-#include <parser.h>
+#include "parser.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-Command *parse_command(const char *input){
+Command *parse_command(const char *input)
+{
     Command *cmd = malloc(sizeof(Command));
-    
+
     if (cmd == NULL)
         return NULL;
 
     // Initialize all fields
     cmd->argc = 0;
     cmd->argv = NULL;
+
     cmd->input_file = NULL;
+
     cmd->output_file = NULL;
-    cmd->append_mode = 0;
+    cmd->output_append = 0;
+
+    cmd->error_file = NULL;
+    cmd->error_append = 0;
 
     const char *p = input;
 
     while (*p) {
-        // Skip whitespace
+
         while (isspace((unsigned char)*p))
             p++;
 
         if (*p == '\0')
             break;
 
-        // Find start of argument
         const char *start = p;
 
-        // Find end of argument
         while (*p && !isspace((unsigned char)*p))
             p++;
 
         size_t len = p - start;
 
-        // Allocate argument
         char *arg = malloc(len + 1);
+
         if (arg == NULL) {
             free_command(cmd);
             return NULL;
@@ -46,7 +50,7 @@ Command *parse_command(const char *input){
         memcpy(arg, start, len);
         arg[len] = '\0';
 
-        // Expand argv
+
         char **new_argv = realloc(cmd->argv,
                                   (cmd->argc + 2) * sizeof(char *));
 
@@ -65,10 +69,11 @@ Command *parse_command(const char *input){
     }
 
     return cmd;
-
 }
 
-void free_command(Command *cmd){
+
+void free_command(Command *cmd)
+{
     if (cmd == NULL)
         return;
 
@@ -79,6 +84,7 @@ void free_command(Command *cmd){
 
     free(cmd->input_file);
     free(cmd->output_file);
+    free(cmd->error_file);
 
     free(cmd);
 }
