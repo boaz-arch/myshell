@@ -50,7 +50,9 @@ void shell_loop(void) {
 
 
 int main() {
+    history_init();
     shell_loop();
+    history_cleanup(void);
     
     return 0;
 }
