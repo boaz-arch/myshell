@@ -22,7 +22,7 @@ void history_add(const char *command)
         return;
 
     if (history.size == history.capacity) {
-        int new_capacity = capacity * 2;
+        int new_capacity = history.capacity * 2;
 
         char **new_entries = realloc(
             history.entries,
