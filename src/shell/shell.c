@@ -23,7 +23,7 @@ int read_input(char *input, size_t size) {
 
 void shell_loop(void) {
     char input[MAX_INPUT_SIZE];
-    COmmand *cmd;
+    Command *cmd;
 
     while (1) {
         print_prompt();
@@ -36,7 +36,13 @@ void shell_loop(void) {
         if (input[0] == '\0')
             continue;
 
-        cmd = parse_input(input);
+        cmd = parse_command(input);
+        
+        if (cmd == NULL) {
+            fprintf(stderr, "parse failed\n");
+            continue;
+        }
+        
         execute_command(cmd);
         free_command(cmd);
     }

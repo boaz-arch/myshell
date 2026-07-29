@@ -4,8 +4,10 @@
 typedef struct {
     int argc;
     char **argv;
+    
     char *input_file;
     char *output_file;
+    
     int append_mode;
 } Command;
 
