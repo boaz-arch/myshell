@@ -36,9 +36,9 @@ int execute_command(Command *cmd) {
         return -1;
     }
     
-    WIFEXITED(status);
-
-    return WEXITSTATUS(status);
+    if (WIFEXITED(status)) return WEXITSTATUS(status);
+    
+    return -1;
 }
 
 

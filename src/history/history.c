@@ -22,17 +22,18 @@ void history_add(const char *command)
         return;
 
     if (history.size == history.capacity) {
-        history.capacity *= 2;
+        int new_capacity = capacity * 2;
 
         char **new_entries = realloc(
             history.entries,
-            history.capacity * sizeof(char *)
+            new_capacity * sizeof(char *)
         );
 
         if (new_entries == NULL)
             return;
 
         history.entries = new_entries;
+        history.capacity = new_capacity;
     }
 
     history.entries[history.size] = strdup(command);
@@ -59,4 +60,16 @@ void history_cleanup(void)
     history.size = 0;
     history.capacity = 0;
 }
+
+
+gcc -Wall -Wextra -I./include \
+./src/shell/shell.c \
+./src/parser/parser.c \
+./src/executor/executor.c \
+./src/builtin/builtin.c \
+./src/history/history.c \
+-o myshell
+
+
+
 

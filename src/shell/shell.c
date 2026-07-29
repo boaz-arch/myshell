@@ -1,13 +1,20 @@
 #include "shell.h"
 #include "parser.h"
 #include "executor.h"
+#include "history.h"
 
 #include<stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 void print_prompt() {
-    printf("MyShell>> ");
+    char cwd[4096];
+    if (getcwd(cwd, sizeof(cwd)) != NULL){
+        printf("MyShell%s>> ", cwd);
+    } else {
+        printf("MyShell>> ");
+    }
+    
     fflush(stdout);
 }
 
@@ -35,6 +42,8 @@ void shell_loop(void) {
 
         if (input[0] == '\0')
             continue;
+            
+        history_add(input);
 
         cmd = parse_command(input);
         
@@ -52,7 +61,7 @@ void shell_loop(void) {
 int main() {
     history_init();
     shell_loop();
-    history_cleanup(void);
+    history_cleanup();
     
     return 0;
 }

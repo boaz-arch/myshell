@@ -1,4 +1,6 @@
 #include "builtin.h"
+#include "parser.h"
+#include "history.h"
 
 #include <string.h>
 #include <stdio.h>
