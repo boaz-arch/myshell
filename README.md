@@ -4,4 +4,5 @@ gcc -Wall -Wextra -I./include \
 ./src/executor/executer.c \
 ./src/builtin/builtin.c \
 ./src/history/history.c \
+./src/redirection/redirection.c \
 -o myshell
