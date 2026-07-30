@@ -148,14 +148,17 @@ Pipeline *parse_pipeline(const char *input) {
     
     pl->left = parse_command(left);
     pl->right = parse_command(right);
+    
+    
 
     free(left);
     free(right);
 
-    if (pl->left == NULL || pl->right == NULL) {
+    if (pl->left == NULL || pl->right == NULL || pl->left->argc == 0 || pl->right->argc == 0) {
+        fprintf(stderr, "systax error near unexpected token '|'\n");
         free_command(pl->left);
         free_command(pl->right);
-        free(pl);
+        free_pipeline(pl);
         return NULL;
     }
     

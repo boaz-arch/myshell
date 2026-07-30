@@ -19,6 +19,10 @@ int execute_pipeline(Command *left, Command *right)
 
     if (left_pid < 0) {
         perror("fork");
+        
+        close(pipefd[0]);
+        close(pipefd[1]);
+        
         return -1;
     }
 
@@ -28,24 +32,28 @@ int execute_pipeline(Command *left, Command *right)
 
         if (dup2(pipefd[1], STDOUT_FILENO) < 0) {
             perror("dup2");
-            exit(EXIT_FAILURE);
+            _exit(EXIT_FAILURE);
         }
 
         close(pipefd[1]);
 
         if (apply_redirections(left) < 0)
-            exit(EXIT_FAILURE);
+            _exit(EXIT_FAILURE);
 
         execvp(left->argv[0], left->argv);
 
         perror("execvp");
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     }
 
     pid_t right_pid = fork();
 
     if (right_pid < 0) {
         perror("fork");
+        
+        close(pipefd[0]);
+        close(pipefd[1]);
+        
         return -1;
     }
 
@@ -55,18 +63,18 @@ int execute_pipeline(Command *left, Command *right)
 
         if (dup2(pipefd[0], STDIN_FILENO) < 0) {
             perror("dup2");
-            exit(EXIT_FAILURE);
+            _exit(EXIT_FAILURE);
         }
 
         close(pipefd[0]);
 
         if (apply_redirections(right) < 0)
-            exit(EXIT_FAILURE);
+            _exit(EXIT_FAILURE);
 
         execvp(right->argv[0], right->argv);
 
         perror("execvp");
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     }
 
     // Parent
