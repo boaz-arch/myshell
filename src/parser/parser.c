@@ -118,10 +118,32 @@ Command *parse_command(const char *input) {
     return cmd;
 }
 
-Pipeline *parse_pipeline(const char *input)
-{
+Pipeline *parse_pipeline(const char *input) {
+    if (strchr(input, '|') == NULL)
+        return NULL;
+    
     if (input == NULL)
         return NULL;
+        
+    const char *start = input;
+    
+    while (*start && isspace((unsigned char) *start))
+        start++;
+        
+    if (*start == '|'){
+        fprintf(stderr, "Syntax error near unexpected token '|'\n");
+        return NULL;
+    }
+    
+    const char *end = input + strlen(input) - 1;
+    
+    while (end > input && isspace((unsigned char) *end))
+        end--;
+        
+    if (*end == '|'){
+        fprintf(stderr, "Syntax error near unexpected token '|'\n");
+        return NULL;
+    }
 
     char *copy = strdup(input);
     if (copy == NULL)
@@ -158,7 +180,8 @@ Pipeline *parse_pipeline(const char *input)
 
         Command *cmd = parse_command(token);
 
-        if (cmd == NULL || cmd->argv == NULL || cmd->argv[0] == NULL) {
+        if (cmd == NULL || cmd->argc == 0) {
+            fprintf(stderr, "Syntax error near unexpected token '|'\n");
             free_command(cmd);
             free_pipeline(pl);
             free(copy);
@@ -185,7 +208,7 @@ Pipeline *parse_pipeline(const char *input)
 
 
     // Reject empty pipeline
-    if (pl->count == 0) {
+    if (pl->count < 2) {
         free_pipeline(pl);
         free(copy);
         return NULL;
