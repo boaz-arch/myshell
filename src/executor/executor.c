@@ -16,12 +16,7 @@ int execute_command(Command *cmd) {
     if (is_builtin(cmd)) {
         return execute_builtin(cmd);
     }
-    
-    if (apply_redirections(cmd) < 0)
-    return -1;
-
-
-
+  
     pid_t pid = fork();
 
     if (pid < 0) {
@@ -30,6 +25,9 @@ int execute_command(Command *cmd) {
     }
 
     if (pid == 0) {            
+        if (apply_redirections(cmd) < 0)
+            exit(EXIT_FAILURE);
+            
         execvp(cmd->argv[0], cmd->argv);
         
         perror("execvp");

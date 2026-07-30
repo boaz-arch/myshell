@@ -16,9 +16,18 @@ typedef struct {
 } Command;
 
 
-Command *parse_command(const char *input);
+typedef struct {
+    Command *left;
+    Command *right;
+    
+} Pipeline;
 
+
+Command *parse_command(const char *input);
 void free_command(Command *cmd);
+
+Pipeline *parse_pipeline(const char *input);
+void free_pipeline(Pipeline *pipeline);
 
 #endif
 

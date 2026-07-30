@@ -2,6 +2,7 @@
 #include "parser.h"
 #include "executor.h"
 #include "history.h"
+#include "pipeline.h"
 
 #include<stdio.h>
 #include <stdlib.h>
@@ -46,16 +47,27 @@ void shell_loop(void) {
             continue;
             
         history_add(input);
-
-        cmd = parse_command(input);
         
-        if (cmd == NULL) {
-            fprintf(stderr, "parse failed\n");
-            continue;
+        Pipeline *pipeline = parse_pipeline(input);
+        
+        if (pipeline != NULL) {
+            execute_pipeline(pipeline->left, pipeline->right);
+            free_pipeline(pipeline);
+            
+        } else {
+            cmd = parse_command(input);
+            
+            if (cmd == NULL) {
+                fprintf(stderr, "parse failed\n");
+                continue;
+            }
+            
+            execute_command(cmd);
+            free_command(cmd);
+            
         }
-        
-        execute_command(cmd);
-        free_command(cmd);
+
+
     }
 }
 

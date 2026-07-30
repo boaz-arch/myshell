@@ -11,6 +11,28 @@ int apply_redirections(Command *cmd) {
     if (cmd == NULL)
         return -1;
     
+    
+    // Input redirection: <
+    if (cmd->input_file != NULL) {
+
+        int fd = open(cmd->input_file, O_RDONLY);
+
+        if (fd < 0) {
+            perror("open");
+            return -1;
+        }
+
+        if (dup2(fd, STDIN_FILENO) < 0) {
+            perror("dup2");
+            close(fd);
+            return -1;
+        }
+
+        close(fd);
+    }
+
+
+    // Output redirection: > or >>
     if (cmd->output_file != NULL){
         int flags = O_WRONLY | O_CREAT;
         
