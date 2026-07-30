@@ -6,83 +6,88 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-int execute_pipeline(Command *left, Command *right)
+int execute_pipeline(Pipeline *pipeline)
 {
-    int pipefd[2];
+    int count = pipeline->count;
+    Command **commands = pipeline->commands;
 
-    if (pipe(pipefd) < 0) {
-        perror("pipe");
+    if (count <= 0)
         return -1;
+
+    int pipes[count - 1][2];
+    pid_t pids[count];
+
+    // Create pipes
+    for (int i = 0; i < count - 1; i++) {
+        if (pipe(pipes[i]) < 0) {
+            perror("pipe");
+            return -1;
+        }
     }
 
-    pid_t left_pid = fork();
+    // Create processes
+    for (int i = 0; i < count; i++) {
 
-    if (left_pid < 0) {
-        perror("fork");
-        
-        close(pipefd[0]);
-        close(pipefd[1]);
-        
-        return -1;
-    }
+        pids[i] = fork();
 
-    if (left_pid == 0) {
-        // Left command writes to the pipe
-        close(pipefd[0]);
-
-        if (dup2(pipefd[1], STDOUT_FILENO) < 0) {
-            perror("dup2");
-            _exit(EXIT_FAILURE);
+        if (pids[i] < 0) {
+            perror("fork");
+            return -1;
         }
 
-        close(pipefd[1]);
 
-        if (apply_redirections(left) < 0)
-            _exit(EXIT_FAILURE);
+        if (pids[i] == 0) {
 
-        execvp(left->argv[0], left->argv);
+            // Connect stdin to previous pipe
+            if (i > 0) {
+                if (dup2(pipes[i - 1][0], STDIN_FILENO) < 0) {
+                    perror("dup2 stdin");
+                    _exit(EXIT_FAILURE);
+                }
+            }
 
-        perror("execvp");
-        _exit(EXIT_FAILURE);
-    }
 
-    pid_t right_pid = fork();
+            // Connect stdout to next pipe
+            if (i < count - 1) {
+                if (dup2(pipes[i][1], STDOUT_FILENO) < 0) {
+                    perror("dup2 stdout");
+                    _exit(EXIT_FAILURE);
+                }
+            }
 
-    if (right_pid < 0) {
-        perror("fork");
-        
-        close(pipefd[0]);
-        close(pipefd[1]);
-        
-        return -1;
-    }
 
-    if (right_pid == 0) {
-        // Right command reads from the pipe
-        close(pipefd[1]);
+            // Child no longer needs pipe descriptors
+            for (int j = 0; j < count - 1; j++) {
+                close(pipes[j][0]);
+                close(pipes[j][1]);
+            }
 
-        if (dup2(pipefd[0], STDIN_FILENO) < 0) {
-            perror("dup2");
+
+            // Apply redirections (<, >, >>)
+            if (apply_redirections(commands[i]) < 0)
+                _exit(EXIT_FAILURE);
+
+
+            execvp(commands[i]->argv[0], commands[i]->argv);
+
+            perror("execvp");
             _exit(EXIT_FAILURE);
         }
-
-        close(pipefd[0]);
-
-        if (apply_redirections(right) < 0)
-            _exit(EXIT_FAILURE);
-
-        execvp(right->argv[0], right->argv);
-
-        perror("execvp");
-        _exit(EXIT_FAILURE);
     }
 
-    // Parent
-    close(pipefd[0]);
-    close(pipefd[1]);
 
-    waitpid(left_pid, NULL, 0);
-    waitpid(right_pid, NULL, 0);
+    // Parent closes pipes
+    for (int i = 0; i < count - 1; i++) {
+        close(pipes[i][0]);
+        close(pipes[i][1]);
+    }
+
+
+    // Wait for all commands
+    for (int i = 0; i < count; i++) {
+        waitpid(pids[i], NULL, 0);
+    }
+
 
     return 0;
 }

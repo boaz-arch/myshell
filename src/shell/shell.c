@@ -51,7 +51,7 @@ void shell_loop(void) {
         Pipeline *pipeline = parse_pipeline(input);
         
         if (pipeline != NULL) {
-            execute_pipeline(pipeline->left, pipeline->right);
+            execute_pipeline(pipeline);
             free_pipeline(pipeline);
             
         } else {
@@ -66,7 +66,6 @@ void shell_loop(void) {
             free_command(cmd);
             
         }
-
 
     }
 }

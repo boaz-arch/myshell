@@ -3,7 +3,7 @@
 
 #include "parser.h"
 
-int execute_pipeline(Command *left, Command *right);
+int execute_pipeline(Pipeline *pipeline);
 
 #endif
 

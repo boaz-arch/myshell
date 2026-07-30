@@ -17,8 +17,8 @@ typedef struct {
 
 
 typedef struct {
-    Command *left;
-    Command *right;
+    Command **commands;
+    int count;
     
 } Pipeline;
 

@@ -118,56 +118,88 @@ Command *parse_command(const char *input) {
     return cmd;
 }
 
-Pipeline *parse_pipeline(const char *input) {
-    const char *pipe = strchr(input, '|');
+Pipeline *parse_pipeline(const char *input)
+{
+    if (input == NULL)
+        return NULL;
 
-    if (pipe == NULL)
+    char *copy = strdup(input);
+    if (copy == NULL)
         return NULL;
 
     Pipeline *pl = malloc(sizeof(Pipeline));
-    if (pl == NULL)
-        return NULL;
-
-    size_t left_len = pipe - input;
-
-    char *left = malloc(left_len + 1);
-    if (left == NULL) {
-        free(pl);
+    if (pl == NULL) {
+        free(copy);
         return NULL;
     }
 
-    memcpy(left, input, left_len);
-    left[left_len] = '\0';
+    pl->commands = NULL;
+    pl->count = 0;
 
-    char *right = strdup(pipe + 1);
-    if (right == NULL) {
-        free(left);
-        free(pl);
-        return NULL;
+    char *token = strtok(copy, "|");
+
+    while (token != NULL) {
+
+        // Reject empty commands (example: || or | ls)
+        int empty = 1;
+        for (char *p = token; *p != '\0'; p++) {
+            if (!isspace((unsigned char)*p)) {
+                empty = 0;
+                break;
+            }
+        }
+
+        if (empty) {
+            free_pipeline(pl);
+            free(copy);
+            return NULL;
+        }
+
+
+        Command *cmd = parse_command(token);
+
+        if (cmd == NULL || cmd->argv == NULL || cmd->argv[0] == NULL) {
+            free_command(cmd);
+            free_pipeline(pl);
+            free(copy);
+            return NULL;
+        }
+
+
+        Command **new_commands =
+            realloc(pl->commands, (pl->count + 1) * sizeof(Command *));
+
+        if (new_commands == NULL) {
+            free_command(cmd);
+            free_pipeline(pl);
+            free(copy);
+            return NULL;
+        }
+
+        pl->commands = new_commands;
+        pl->commands[pl->count] = cmd;
+        pl->count++;
+
+        token = strtok(NULL, "|");
     }
-    
-    pl->left = parse_command(left);
-    pl->right = parse_command(right);
-    
-    
 
-    free(left);
-    free(right);
 
-    if (pl->left == NULL || pl->right == NULL || pl->left->argc == 0 || pl->right->argc == 0) {
-        fprintf(stderr, "systax error near unexpected token '|'\n");
-        free_command(pl->left);
-        free_command(pl->right);
+    // Reject empty pipeline
+    if (pl->count == 0) {
         free_pipeline(pl);
+        free(copy);
         return NULL;
     }
-    
+
+
+    free(copy);
+
     return pl;
 }
 
 
-void free_command(Command *cmd)
-{
+
+void free_command(Command *cmd) {
     if (cmd == NULL)
         return;
 
@@ -183,15 +215,16 @@ void free_command(Command *cmd)
     free(cmd);
 }
 
-
 void free_pipeline(Pipeline *pipeline)
 {
     if (pipeline == NULL)
         return;
 
-    free_command(pipeline->left);
-    free_command(pipeline->right);
+    for (int i = 0; i < pipeline->count; i++) {
+        free_command(pipeline->commands[i]);
+    }
 
+    free(pipeline->commands);
     free(pipeline);
 }
 
