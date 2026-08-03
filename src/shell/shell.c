@@ -8,7 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <signal.h>
+#include <sys/wait.h>
 
 void print_prompt() {
     char cwd[4096];
@@ -30,6 +31,11 @@ int read_input(char *input, size_t size) {
     return 1;
 }
 
+void sigchld_handler(int sig){
+    (void)sig;
+    
+    while (waitpid(-1, NULL, WNOHANG) > 0){}
+} 
 
 void shell_loop(void) {
     char input[MAX_INPUT_SIZE];
@@ -72,6 +78,7 @@ void shell_loop(void) {
 
 
 int main() {
+    signal(SIGCHLD, sigchld_handler);
     history_init();
     shell_loop();
     history_cleanup();
