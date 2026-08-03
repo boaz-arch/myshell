@@ -3,6 +3,7 @@
 #include "executor.h"
 #include "history.h"
 #include "pipeline.h"
+#include "jobs.h"
 
 #include<stdio.h>
 #include <stdlib.h>
@@ -31,11 +32,15 @@ int read_input(char *input, size_t size) {
     return 1;
 }
 
-void sigchld_handler(int sig){
+void sigchld_handler(int sig) {
     (void)sig;
-    
-    while (waitpid(-1, NULL, WNOHANG) > 0){}
-} 
+
+    pid_t pid;
+
+    while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
+        mark_job_finished(pid);
+    }
+}
 
 void shell_loop(void) {
     char input[MAX_INPUT_SIZE];
@@ -80,6 +85,7 @@ void shell_loop(void) {
 int main() {
     signal(SIGCHLD, sigchld_handler);
     history_init();
+    jobs_init();
     shell_loop();
     history_cleanup();
     

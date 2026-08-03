@@ -1,6 +1,7 @@
 #include "pipeline.h"
 #include "redirection.h"
 #include "parser.h"
+#include "jobs.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,6 +85,7 @@ int execute_pipeline(Pipeline *pipeline)
     }
     
     if (commands[count-1]->background){
+        printf("{%d}\n", pids[count-1]);
         return 0;
     }
 

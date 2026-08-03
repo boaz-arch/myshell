@@ -8,4 +8,6 @@ gcc -Wall -Wextra -I./include \
 ./src/history/history.c \
 ./src/redirection/redirection.c \
 ./src/pipeline/pipeline.c \
- -o myshell
+./src/jobs/jobs.c  \
+-o myshell
+

@@ -1,6 +1,7 @@
 #include "builtin.h"
 #include "parser.h"
 #include "history.h"
+#include "jobs.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -23,6 +24,10 @@ int is_builtin(const Command *cmd) {
         
     if (strcmp(cmd->argv[0], "history") == 0)
         return 1;
+        
+    if (strcmp(cmd->argv[0], "jobs") == 0)
+        return 1;
+        
     
 
     return 0;
@@ -72,6 +77,11 @@ int execute_builtin(Command *cmd) {
 
     if (strcmp(cmd->argv[0], "history") == 0) {
         history_print();
+        return 0;
+    }
+    
+    if (strcmp(cmd->argv[0], "jobs") == 0){
+        jobs_print();
         return 0;
     }
 

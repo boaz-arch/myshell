@@ -2,6 +2,7 @@
 #include "builtin.h"
 #include "redirection.h"
 #include "parser.h"
+#include "jobs.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +39,8 @@ int execute_command(Command *cmd) {
     int status;
     
     if(cmd->background){
+        add_job(pid, cmd->argv[0]);
+        printf("[%d]\n", pid);
         return 0;
     }
 

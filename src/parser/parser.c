@@ -70,7 +70,7 @@ Command *parse_command(const char *input) {
             continue;
         }
         
-        if (strcmp(token, ">>") == 0){
+        else if (strcmp(token, ">>") == 0){
             free(token);
             
             char *filename = next_token(&p);
@@ -87,7 +87,7 @@ Command *parse_command(const char *input) {
             continue;
         }
         
-        if (strcmp(token, "<") == 0){
+        else if (strcmp(token, "<") == 0){
             free(token);
             
             char *filename = next_token(&p);
