@@ -18,9 +18,14 @@ void sigchld_handler(int sig) {
     (void)sig;
 
     pid_t pid;
+    int status;
 
-    while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
-        mark_job_finished(pid);
+    while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0) {
+        if (WIFSTOPPED(status)) {
+            mark_job_stopped(pid);
+        } else {
+            mark_job_done(pid);
+        }
     }
 }
 
@@ -29,6 +34,16 @@ void sigint_handler(int sig) {
     
     if (foreground_pid > 0){
         kill(foreground_pid, SIGINT);
+    }
+    
+    write(STDOUT_FILENO, "\n", 1);
+}
+
+void sigtstp_handler(int sig) {
+    (void)sig;
+    
+    if (foreground_pid > 0){
+        kill(foreground_pid, SIGTSTP);
     }
     
     write(STDOUT_FILENO, "\n", 1);
@@ -115,6 +130,12 @@ int main() {
     sa_int.sa_flags = SA_RESTART;
     sigaction(SIGINT, &sa_int, NULL);
     
+    struct sigaction sa_tstp;
+    
+    sa_tstp.sa_handler = sigint_handler;
+    sigemptyset(&sa_tstp.sa_mask);
+    sa_tstp.sa_flags = SA_RESTART;
+    sigaction(SIGTSTP, &sa_tstp, NULL);
     
     history_init();
     jobs_init();

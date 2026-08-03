@@ -21,7 +21,7 @@ int add_job(pid_t pid, const char *command) {
 
     jobs[job_count].job_id = next_job_id++;
     jobs[job_count].pid = pid;
-    jobs[job_count].finished = 0;
+    jobs[job_count].state = JOB_RUNNING;
 
     strncpy(jobs[job_count].command,
             command,
@@ -36,12 +36,17 @@ int add_job(pid_t pid, const char *command) {
 
 void jobs_print(void) {
     for (int i = 0; i < job_count; i++) {
-        if (!jobs[i].finished) {
-            printf("[%d] Running %s (PID %d)\n",
-                   jobs[i].job_id,
-                   jobs[i].command,
-                   jobs[i].pid);
-        }
+    
+        const char *state;
+        
+        if (jobs[i].state == JOB_RUNNING) state = "Running";
+        if (jobs[i].state == JOB_STOPPED) state = "Stopped";
+        else state = "Done";
+        
+        printf("[%d] %s %s\n",
+                jobs[i].job_id,
+                state,
+                jobs[i].command);
     }
 }
 
@@ -55,12 +60,22 @@ Job *find_job(pid_t pid) {
     return NULL;
 }
 
-void mark_job_finished(pid_t pid) {
-    Job *job = find_job(pid);
 
+void mark_job_stopped(pid_t pid){
+    Job * job = find_job(pid);
+    
     if (job != NULL)
-        job->finished = 1;
+        job->state = JOB_STOPPED;
 }
+
+
+void mark_job_done(pid_t pid){
+    Job * job = find_job(pid);
+    
+    if (job != NULL)
+        job->state = JOB_DONE;
+}
+
 
 void remove_job(pid_t pid) {
     for (int i = 0; i < job_count; i++) {
@@ -81,7 +96,7 @@ void jobs_check_finished(void) {
 
     while (i < job_count) {
 
-        if (jobs[i].finished) {
+        if (jobs[i].state == JOB_DONE) {
 
             printf("[%d] Done                    %s\n",
                    jobs[i].job_id,

@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <string.h>
-
+#include <signal.h>
 
 
 int execute_command(Command *cmd) {
@@ -30,6 +30,10 @@ int execute_command(Command *cmd) {
     
 
     if (pid == 0) {            
+    
+        signal(SIGINT, SIG_DFL);
+        signal(SIGTSTP, SIG_DFL);
+                
         if (apply_redirections(cmd) < 0)
             _exit(EXIT_FAILURE);
             
@@ -60,13 +64,18 @@ int execute_command(Command *cmd) {
     
     foreground_pid = pid;
 
-    if (waitpid(pid, &status, 0) < 0) {
+    if (waitpid(pid, &status, WUNTRACED) < 0) {
         foreground_pid = 0;
         perror("waitpid");
         return -1;
     }
     
     foreground_pid = 0;
+    
+    if (WIFSTOPPED(status)) {
+        printf("Stopped: %s\n", cmd->argv[0]);
+        return 0;
+    }
 
     if (WIFEXITED(status))
         return 128 + WEXITSTATUS(status);
