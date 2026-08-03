@@ -23,7 +23,8 @@ void sigchld_handler(int sig) {
     while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0) {
         if (WIFSTOPPED(status)) {
             mark_job_stopped(pid);
-        } else {
+        } 
+        else if (WIFEXITED(status) || WIFSIGNALED(status)){
             mark_job_done(pid);
         }
     }
@@ -132,7 +133,7 @@ int main() {
     
     struct sigaction sa_tstp;
     
-    sa_tstp.sa_handler = sigint_handler;
+    sa_tstp.sa_handler = sigtstp_handler;
     sigemptyset(&sa_tstp.sa_mask);
     sa_tstp.sa_flags = SA_RESTART;
     sigaction(SIGTSTP, &sa_tstp, NULL);

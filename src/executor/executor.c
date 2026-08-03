@@ -73,12 +73,28 @@ int execute_command(Command *cmd) {
     foreground_pid = 0;
     
     if (WIFSTOPPED(status)) {
-        printf("Stopped: %s\n", cmd->argv[0]);
+        char command[256] = "";
+        
+        
+        for (int i = 0; i < cmd->argc; i++){
+            strcat(command, cmd->argv[i]);
+            
+            if (i < cmd->argc -1){
+                strcat(command, " ");
+            }
+        }
+        
+        int job_id = add_job(pid, command);
+    
+        mark_job_stopped(pid);
+        
+        printf("[%d] Stopped                      %s\n", job_id, command);
+        
         return 0;
     }
 
     if (WIFEXITED(status))
-        return 128 + WEXITSTATUS(status);
+        return WEXITSTATUS(status);
 
     return -1;
 

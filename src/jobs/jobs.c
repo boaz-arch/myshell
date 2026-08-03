@@ -40,7 +40,7 @@ void jobs_print(void) {
         const char *state;
         
         if (jobs[i].state == JOB_RUNNING) state = "Running";
-        if (jobs[i].state == JOB_STOPPED) state = "Stopped";
+        else if (jobs[i].state == JOB_STOPPED) state = "Stopped";
         else state = "Done";
         
         printf("[%d] %s %s\n",
