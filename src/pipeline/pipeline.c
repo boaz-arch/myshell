@@ -1,5 +1,6 @@
 #include "pipeline.h"
 #include "redirection.h"
+#include "parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,7 +82,10 @@ int execute_pipeline(Pipeline *pipeline)
         close(pipes[i][0]);
         close(pipes[i][1]);
     }
-
+    
+    if (commands[count-1]->background){
+        return 0;
+    }
 
     // Wait for all commands
     for (int i = 0; i < count; i++) {

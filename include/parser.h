@@ -12,6 +12,8 @@ typedef struct {
         
     char * error_file;
     int error_append;
+    
+    int background;
 
 } Command;
 

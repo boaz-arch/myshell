@@ -44,6 +44,8 @@ Command *parse_command(const char *input) {
     cmd->error_file = NULL;
     cmd->error_append = 0;
     
+    cmd->background = 0;
+    
     const char *p = input;
     
     while (1){
@@ -68,7 +70,7 @@ Command *parse_command(const char *input) {
             continue;
         }
         
-        else if (strcmp(token, ">>") == 0){
+        if (strcmp(token, ">>") == 0){
             free(token);
             
             char *filename = next_token(&p);
@@ -85,7 +87,7 @@ Command *parse_command(const char *input) {
             continue;
         }
         
-        else if (strcmp(token, "<") == 0){
+        if (strcmp(token, "<") == 0){
             free(token);
             
             char *filename = next_token(&p);
@@ -98,6 +100,12 @@ Command *parse_command(const char *input) {
             
             cmd->input_file = filename;
             
+            continue;
+        }
+        
+        if (strcmp(token, "&") == 0){
+            free(token);
+            cmd->background = 1;
             continue;
         }
         

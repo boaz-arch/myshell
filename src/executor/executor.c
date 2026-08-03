@@ -1,6 +1,7 @@
 #include "executor.h"
 #include "builtin.h"
 #include "redirection.h"
+#include "parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +36,10 @@ int execute_command(Command *cmd) {
     }
     
     int status;
+    
+    if(cmd->background){
+        return 0;
+    }
 
     if (waitpid(pid, &status, 0) < 0) {
         perror("waitpid");
