@@ -4,6 +4,7 @@
 #include "history.h"
 #include "pipeline.h"
 #include "jobs.h"
+#include "signals.h"
 
 #include<stdio.h>
 #include <stdlib.h>
@@ -12,6 +13,24 @@
 #include <signal.h>
 #include <sys/wait.h>
 
+
+void sigchld_handler(int sig) {
+    (void)sig;
+
+    pid_t pid;
+
+    while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
+        mark_job_finished(pid);
+    }
+}
+
+void sigint_handler(int sig) {
+    (void)sig;
+    
+    if (foreground_pid > 0){
+        kill(foreground_pid, SIGINT);
+    }
+}
 
 
 void print_prompt() {
@@ -34,15 +53,6 @@ int read_input(char *input, size_t size) {
     return 1;
 }
 
-void sigchld_handler(int sig) {
-    (void)sig;
-
-    pid_t pid;
-
-    while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
-        mark_job_finished(pid);
-    }
-}
 
 void shell_loop(void) {
     char input[MAX_INPUT_SIZE];
@@ -89,12 +99,20 @@ void shell_loop(void) {
 
 int main() {
 
-    struct sigaction sa;
+    struct sigaction sa_chld;
     
-    sa.sa_handler = sigchld_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART;
-    sigaction(SIGCHLD, &sa, NULL);
+    sa_chld.sa_handler = sigchld_handler;
+    sigemptyset(&sa_chld.sa_mask);
+    sa_chld.sa_flags = SA_RESTART;
+    sigaction(SIGCHLD, &sa_chld, NULL);
+    
+    struct sigaction sa_int;
+    
+    sa_int.sa_handler = sigint_handler;
+    sigemptyset(&sa_int.sa_mask);
+    sa_int.sa_flags = SA_RESTART;
+    sigaction(SIGCHLD, &sa_int, NULL);
+    
     
     history_init();
     jobs_init();

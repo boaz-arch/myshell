@@ -3,6 +3,7 @@
 #include "redirection.h"
 #include "parser.h"
 #include "jobs.h"
+#include "signals.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,6 +27,7 @@ int execute_command(Command *cmd) {
         perror("fork");
         return -1;
     }
+    
 
     if (pid == 0) {            
         if (apply_redirections(cmd) < 0)
@@ -55,11 +57,15 @@ int execute_command(Command *cmd) {
         printf("[%d] %d\n", job_id, pid);
         return 0;
     }
+    
+    foreground_pid = pid;
 
     if (waitpid(pid, &status, 0) < 0) {
         perror("waitpid");
         return -1;
     }
+    
+    foreground_pid = 0;
 
     if (WIFEXITED(status))
         return WEXITSTATUS(status);

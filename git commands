@@ -9,5 +9,6 @@ gcc -Wall -Wextra -I./include \
 ./src/redirection/redirection.c \
 ./src/pipeline/pipeline.c \
 ./src/jobs/jobs.c  \
+./src/signals/signals.c \
 -o myshell
 
