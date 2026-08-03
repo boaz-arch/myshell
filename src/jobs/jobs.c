@@ -15,9 +15,9 @@ void jobs_init(void) {
     next_job_id = 1;
 }
 
-void add_job(pid_t pid, const char *command) {
+int add_job(pid_t pid, const char *command) {
     if (job_count >= MAX_JOBS)
-        return;
+        return -1;
 
     jobs[job_count].job_id = next_job_id++;
     jobs[job_count].pid = pid;
@@ -30,6 +30,8 @@ void add_job(pid_t pid, const char *command) {
     jobs[job_count].command[sizeof(jobs[job_count].command) - 1] = '\0';
 
     job_count++;
+    
+    return jobs[job_count - 1].job_id;
 }
 
 void jobs_print(void) {
@@ -42,6 +44,7 @@ void jobs_print(void) {
         }
     }
 }
+
 
 Job *find_job(pid_t pid) {
     for (int i = 0; i < job_count; i++) {
@@ -80,7 +83,7 @@ void jobs_check_finished(void) {
 
         if (jobs[i].finished) {
 
-            printf("[%d] Done\t%s\n",
+            printf("[%d] Done                    %s\n",
                    jobs[i].job_id,
                    jobs[i].command);
 

@@ -11,7 +11,7 @@ typedef struct {
 } Job;
 
 void jobs_init(void);
-void add_job(pid_t pid, const char *command);
+int add_job(pid_t pid, const char *command);
 void jobs_print(void);
 void remove_job(pid_t pid);
 Job *find_job(pid_t pid);

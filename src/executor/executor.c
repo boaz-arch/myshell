@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <string.h>
 
 
 
@@ -39,8 +40,19 @@ int execute_command(Command *cmd) {
     int status;
     
     if(cmd->background){
-        add_job(pid, cmd->argv[0]);
-        printf("[%d]\n", pid);
+        char command[256] = "";
+        
+        for (int i = 0; i < cmd->argc; i++){
+            strcat(command, cmd->argv[i]);
+            
+            if (i < cmd->argc -1){
+                strcat(command, " ");
+            }
+        }
+        
+        int job_id = add_job(pid, command);
+        
+        printf("[%d] %d\n", job_id, pid);
         return 0;
     }
 

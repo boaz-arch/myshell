@@ -12,6 +12,8 @@
 #include <signal.h>
 #include <sys/wait.h>
 
+
+
 void print_prompt() {
     char cwd[4096];
     if (getcwd(cwd, sizeof(cwd)) != NULL){
@@ -47,6 +49,7 @@ void shell_loop(void) {
     Command *cmd;
 
     while (1) {
+        jobs_check_finished();
         print_prompt();
 
         if (!read_input(input, sizeof(input))) {
@@ -77,13 +80,22 @@ void shell_loop(void) {
             free_command(cmd);
             
         }
+        
+        jobs_check_finished();
 
     }
 }
 
 
 int main() {
-    signal(SIGCHLD, sigchld_handler);
+
+    struct sigaction sa;
+    
+    sa.sa_handler = sigchld_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    sigaction(SIGCHLD, &sa, NULL);
+    
     history_init();
     jobs_init();
     shell_loop();
