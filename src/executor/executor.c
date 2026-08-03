@@ -36,7 +36,7 @@ int execute_command(Command *cmd) {
         execvp(cmd->argv[0], cmd->argv);
         
         perror("execvp");
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     }
     
     int status;
@@ -61,6 +61,7 @@ int execute_command(Command *cmd) {
     foreground_pid = pid;
 
     if (waitpid(pid, &status, 0) < 0) {
+        foreground_pid = 0;
         perror("waitpid");
         return -1;
     }
@@ -68,7 +69,7 @@ int execute_command(Command *cmd) {
     foreground_pid = 0;
 
     if (WIFEXITED(status))
-        return WEXITSTATUS(status);
+        return 128 + WEXITSTATUS(status);
 
     return -1;
 

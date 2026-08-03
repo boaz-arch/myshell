@@ -30,6 +30,8 @@ void sigint_handler(int sig) {
     if (foreground_pid > 0){
         kill(foreground_pid, SIGINT);
     }
+    
+    write(STDOUT_FILENO, "\n", 1);
 }
 
 
@@ -111,7 +113,7 @@ int main() {
     sa_int.sa_handler = sigint_handler;
     sigemptyset(&sa_int.sa_mask);
     sa_int.sa_flags = SA_RESTART;
-    sigaction(SIGCHLD, &sa_int, NULL);
+    sigaction(SIGINT, &sa_int, NULL);
     
     
     history_init();
