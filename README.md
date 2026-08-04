@@ -519,8 +519,3 @@ Implement:
 
 ---
 
-# Author
-
-Boaz King
-
-Educational project built to learn Unix shell internals, process management, signals, pipes, job control, and operating systems concepts.
